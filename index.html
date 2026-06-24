@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LACE — Audio Demo (Anonymous Submission)</title>
+<style>
+  :root {
+    --fg: #1a1a1a; --muted: #666; --accent: #2b6cb0; --accent-soft: #ebf2fb;
+    --border: #e2e2e2; --bg: #ffffff; --bg-alt: #fafafa; --group: #d3e3f5;
+  }
+  * { box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: var(--fg); background: var(--bg); line-height: 1.6; margin: 0; }
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 2.5rem 1.25rem 4rem; }
+  header { text-align: center; border-bottom: 1px solid var(--border); padding-bottom: 1.75rem; margin-bottom: 2rem; }
+  h1 { font-size: 1.9rem; margin: 0 0 .4rem; letter-spacing: -0.01em; }
+  h1 .sub { display: block; font-size: 1.05rem; font-weight: 500; color: var(--muted); margin-top: .35rem; }
+  .anon-badge { display: inline-block; margin-top: .75rem; padding: .25rem .7rem; font-size: .8rem;
+    color: var(--accent); background: var(--accent-soft); border-radius: 999px; font-weight: 600; }
+  h2 { font-size: 1.3rem; margin: 2.6rem 0 .3rem; padding-bottom: .4rem; border-bottom: 2px solid var(--accent-soft); }
+  .abstract { background: var(--bg-alt); border: 1px solid var(--border); border-radius: 10px;
+    padding: 1.1rem 1.3rem; font-size: .96rem; color: #333; text-align: justify; }
+  .abstract strong { color: var(--fg); }
+  p.desc { color: var(--muted); margin: .35rem 0 1rem; font-size: .92rem; text-align: justify; }
+
+  table { border-collapse: collapse; width: 100%; margin: .5rem 0 1.5rem; font-size: .9rem; }
+  th, td { padding: .5rem .6rem; text-align: center; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  thead th { background: var(--bg-alt); font-weight: 600; }
+  th.group-head { background: var(--accent-soft); color: var(--accent); border-bottom: 1px solid var(--group); font-size: .85rem; }
+  th.method-head { font-weight: 500; color: #444; font-size: .85rem; }
+  td.label, th.label { text-align: left; font-weight: 600; white-space: nowrap; }
+  td.transcript { text-align: left; color: var(--muted); font-style: italic; font-size: .84rem; max-width: 240px; }
+  .group-start { border-left: 2px solid var(--group); }
+  tr:hover td { background: #fcfcfc; }
+  audio { width: 140px; height: 32px; }
+  .scroll { overflow-x: auto; }
+
+  footer { margin-top: 3rem; padding-top: 1.25rem; border-top: 1px solid var(--border); color: var(--muted); font-size: .85rem; text-align: center; }
+  code { background: var(--bg-alt); padding: .1rem .35rem; border-radius: 4px; font-size: .85em; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <h1>LACE: Layer-Wise Compression for Dynamic-Frame-Rate Codecs
+      <span class="sub">Audio samples for reconstruction and text-to-speech</span>
+    </h1>
+    <span class="anon-badge">Anonymous submission · SLT 2026</span>
+  </header>
+
+  <section>
+    <h2>Abstract</h2>
+    <div class="abstract">
+      Neural audio codecs are key components in speech language modeling. However, their high frame
+      rates produce long discrete codes, increasing computational cost. Dynamic-frame-rate codecs
+      mitigate this by reducing the effective frame rate using a compression step to merge multiple
+      frames together. Most prior methods either operate on single-codebook codecs or apply a single
+      compression step before multi-layer quantization, forcing all quantization layers to share the
+      same segmentation boundaries. We propose <strong>LACE</strong>, a dynamic-frame-rate codec that
+      applies an independent compression step at each quantization layer, enabling
+      <strong>layer-specific segmentation boundaries</strong>. To use LACE tokens in downstream
+      text-to-speech (TTS), we further introduce <strong>union alignment</strong> and
+      <strong>boundary anchor</strong> to keep durations consistent across layers while preserving
+      compression benefits.
+    </div>
+  </section>
+
+  <div id="sections"></div>
+
+  <footer>
+    Audio is provided for review purposes only. All identifying information has been removed for
+    double-blind review.
+  </footer>
+
+</div>
+
+<script>
+/* =====================================================================
+   CONFIG — edit only this block.
+   Audio files live at:  <base>/<sampleId>/<methodKey>.wav
+   Missing files just show an empty player, so you can fill them in gradually.
+   `groups` create the grouped (two-row) column headers.
+   { label: "γ = 0.1", methods: [ { key: "single_010", label: "Single" }, { key: "lace_010", label: "LACE" } ] },
+   ===================================================================== */
+const CONFIG = {
+  sections: [
+    {
+      title: "1a. Reconstruction — DP compression at different rates",
+      desc: "DAC backbone. We sweep the target compression rate γ for DP compression; lower γ means fewer codes and a lower effective frame rate. Each row is one utterance from LibriTTS test-clean.",
+      base: "audio/recon_dp_rate",
+      groups: [
+        { label: "Reference", methods: [ { key: "gt", label: "Ground Truth" } ] },
+        { label: "γ = 0.3", methods: [ { key: "single_030", label: "Single" }, { key: "lace_030", label: "LACE" } ] },
+        { label: "γ = 0.5", methods: [ { key: "single_050", label: "Single" }, { key: "lace_050", label: "LACE" } ] },
+        { label: "γ = 0.7", methods: [ { key: "single_070", label: "Single" }, { key: "lace_070", label: "LACE" } ] },
+      ],
+      samples: [ { id: "utt1", text: "" }, { id: "utt2", text: "" }, { id: "utt3", text: "" } ],
+    },
+    {
+      title: "1b. Reconstruction — compression models at a matched bitrate",
+      desc: "DAC backbone, all systems at the same bitrate. Because LACE adds per-layer durations, matching bitrate (rather than frame rate) gives a fair comparison. We compare the three compression models, each with single vs. layer-wise (LACE) compression; as in the paper, the threshold models (Cosine, Density) are shown only at this matched setting.",
+      base: "audio/recon_models",
+      groups: [
+        { label: "Reference", methods: [ { key: "gt", label: "Ground Truth" } ] },
+        { label: "DP",      methods: [ { key: "dp_single",  label: "Single" }, { key: "dp_lace",  label: "LACE" } ] },
+        { label: "Cosine",  methods: [ { key: "cos_single", label: "Single" }, { key: "cos_lace", label: "LACE" } ] },
+        { label: "Density", methods: [ { key: "den_single", label: "Single" }, { key: "den_lace", label: "LACE" } ] },
+      ],
+      samples: [ { id: "utt1", text: "" }, { id: "utt2", text: "" }, { id: "utt3", text: "" } ],
+    },
+    {
+      title: "1c. Reconstruction — codec backbones (DP)",
+      desc: "DP compression, single vs. layer-wise (LACE), at a matched bitrate, across three codec backbones (DAC, SoundStream, EnCodec). This shows that the benefit of layer-wise compression holds across codecs.",
+      base: "audio/recon_backbone",
+      groups: [
+        { label: "Reference",   methods: [ { key: "gt", label: "Ground Truth" } ] },
+        { label: "DAC",         methods: [ { key: "dac_single", label: "Single" }, { key: "dac_lace", label: "LACE" } ] },
+        { label: "SoundStream", methods: [ { key: "ss_single",  label: "Single" }, { key: "ss_lace",  label: "LACE" } ] },
+        { label: "EnCodec",     methods: [ { key: "enc_single", label: "Single" }, { key: "enc_lace", label: "LACE" } ] },
+      ],
+      samples: [ { id: "utt1", text: "" }, { id: "utt2", text: "" }, { id: "utt3", text: "" } ],
+    },
+    {
+      title: "2. Text-to-Speech — configurations",
+      desc: "DAC backbone, DP compression. We compare baselines against LACE at several compression rates γ and anchor layers l*. Each row is one synthesized prompt.",
+      base: "audio/tts",
+      groups: [
+        { label: "Baseline", methods: [
+          { key: "nocomp",     label: "No comp." },
+          { key: "single_050", label: "Single γ=0.5" },
+          { key: "single_070", label: "Single γ=0.7" },
+        ]},
+        { label: "LACE", methods: [
+          { key: "lace_050_l2", label: "γ=0.5, l*=2" },
+          { key: "lace_050_l4", label: "γ=0.5, l*=4" },
+          { key: "lace_070_l2", label: "γ=0.7, l*=2" },
+        ]},
+      ],
+      samples: [ { id: "tts1", text: "" }, { id: "tts2", text: "" }, { id: "tts3", text: "" } ],
+    },
+  ],
+};
+
+function buildSection(sec) {
+  const frag = document.createDocumentFragment();
+  const h = document.createElement("h2"); h.textContent = sec.title; frag.appendChild(h);
+  if (sec.desc) { const p = document.createElement("p"); p.className = "desc"; p.textContent = sec.desc; frag.appendChild(p); }
+
+  const hasText = sec.samples.some(s => s.text && s.text.trim());
+  // flatten methods, marking the first column of each group
+  const flat = [];
+  sec.groups.forEach(g => g.methods.forEach((m, i) => flat.push({ ...m, groupStart: i === 0 })));
+
+  const table = document.createElement("table");
+  const thead = document.createElement("thead");
+
+  const r1 = document.createElement("tr");
+  r1.innerHTML = `<th class="label" rowspan="2">#</th>` +
+    (hasText ? `<th class="label" rowspan="2">Transcript</th>` : ``) +
+    sec.groups.map(g => `<th class="group-head group-start" colspan="${g.methods.length}">${g.label}</th>`).join("");
+  thead.appendChild(r1);
+
+  const r2 = document.createElement("tr");
+  r2.innerHTML = flat.map(m => `<th class="method-head${m.groupStart ? " group-start" : ""}">${m.label}</th>`).join("");
+  thead.appendChild(r2);
+  table.appendChild(thead);
+
+  const tbody = document.createElement("tbody");
+  sec.samples.forEach((s, i) => {
+    const tr = document.createElement("tr");
+    let cells = `<td class="label">${i + 1}</td>`;
+    if (hasText) cells += `<td class="transcript">${s.text || ""}</td>`;
+    cells += flat.map(m => {
+      const src = `${sec.base}/${s.id}/${m.key}.wav`;
+      return `<td class="${m.groupStart ? "group-start" : ""}"><audio controls preload="none" src="${src}"></audio></td>`;
+    }).join("");
+    tr.innerHTML = cells;
+    tbody.appendChild(tr);
+  });
+  table.appendChild(tbody);
+
+  const scroll = document.createElement("div"); scroll.className = "scroll";
+  scroll.appendChild(table); frag.appendChild(scroll);
+  return frag;
+}
+
+const root = document.getElementById("sections");
+CONFIG.sections.forEach(sec => root.appendChild(buildSection(sec)));
+</script>
+</body>
+</html>
